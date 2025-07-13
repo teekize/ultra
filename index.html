@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Ultrasound Imaging Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>Ultrasound Imaging Simulation</h1>
+            <div class="header-controls">
+                <button id="playPauseBtn" class="control-btn">
+                    <span class="btn-icon">▶</span>
+                    <span class="btn-text">Start</span>
+                </button>
+                <button id="stepBtn" class="control-btn">
+                    <span class="btn-icon">⏭</span>
+                    <span class="btn-text">Step</span>
+                </button>
+                <button id="resetBtn" class="control-btn">
+                    <span class="btn-icon">⏹</span>
+                    <span class="btn-text">Reset</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel - Controls -->
+            <div class="control-panel">
+                <div class="panel-section">
+                    <h3>Transducer Configuration</h3>
+                    <div class="control-group">
+                        <label for="probeType">Probe Type:</label>
+                        <select id="probeType" class="control-select">
+                            <option value="linear">Linear Array</option>
+                            <option value="convex">Convex Array</option>
+                            <option value="phased">Phased Array</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="frequency">Frequency (MHz):</label>
+                        <input type="range" id="frequency" min="2" max="15" value="7.5" step="0.5" class="control-slider">
+                        <span class="value-display" id="frequencyValue">7.5</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="scanLines">Scan Lines:</label>
+                        <input type="range" id="scanLines" min="32" max="256" value="128" step="16" class="control-slider">
+                        <span class="value-display" id="scanLinesValue">128</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="depth">Depth (cm):</label>
+                        <input type="range" id="depth" min="5" max="25" value="15" step="1" class="control-slider">
+                        <span class="value-display" id="depthValue">15</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Signal Processing</h3>
+                    <div class="control-group">
+                        <label for="gain">Gain (dB):</label>
+                        <input type="range" id="gain" min="0" max="100" value="50" step="5" class="control-slider">
+                        <span class="value-display" id="gainValue">50</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="tgc">TGC Slope:</label>
+                        <input type="range" id="tgc" min="0" max="100" value="30" step="5" class="control-slider">
+                        <span class="value-display" id="tgcValue">30</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="focus">Focus Depth (cm):</label>
+                        <input type="range" id="focus" min="2" max="20" value="8" step="1" class="control-slider">
+                        <span class="value-display" id="focusValue">8</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Organ Presets</h3>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" data-preset="liver">Liver</button>
+                        <button class="preset-btn" data-preset="heart">Heart</button>
+                        <button class="preset-btn" data-preset="kidney">Kidney</button>
+                        <button class="preset-btn" data-preset="superficial">Superficial</button>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Display Options</h3>
+                    <div class="control-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showScanLines" checked>
+                            Show Scan Lines
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showBeamforming" checked>
+                            Show Beamforming
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showProcessing" checked>
+                            Show Processing Pipeline
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Panel - Main Display -->
+            <div class="display-panel">
+                <div class="ultrasound-display">
+                    <canvas id="ultrasoundCanvas" width="800" height="600"></canvas>
+                    <div class="display-overlay">
+                        <div class="depth-markers">
+                            <span class="depth-marker" style="top: 10%">2cm</span>
+                            <span class="depth-marker" style="top: 30%">6cm</span>
+                            <span class="depth-marker" style="top: 50%">10cm</span>
+                            <span class="depth-marker" style="top: 70%">14cm</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Processing Pipeline Visualization -->
+                <div class="pipeline-display">
+                    <canvas id="pipelineCanvas" width="800" height="150"></canvas>
+                </div>
+            </div>
+
+            <!-- Right Panel - Performance Metrics -->
+            <div class="metrics-panel">
+                <div class="panel-section">
+                    <h3>Performance Metrics</h3>
+                    <div class="metric-group">
+                        <div class="metric">
+                            <label>Frame Rate:</label>
+                            <span id="frameRate" class="metric-value">0 FPS</span>
+                        </div>
+                        <div class="metric">
+                            <label>Data Throughput:</label>
+                            <span id="dataThroughput" class="metric-value">0 MB/s</span>
+                        </div>
+                        <div class="metric">
+                            <label>Processing Time:</label>
+                            <span id="processingTime" class="metric-value">0 ms</span>
+                        </div>
+                        <div class="metric">
+                            <label>Memory Usage:</label>
+                            <span id="memoryUsage" class="metric-value">0 MB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Image Quality</h3>
+                    <div class="metric-group">
+                        <div class="metric">
+                            <label>SNR:</label>
+                            <span id="snr" class="metric-value">0 dB</span>
+                        </div>
+                        <div class="metric">
+                            <label>Contrast:</label>
+                            <span id="contrast" class="metric-value">0%</span>
+                        </div>
+                        <div class="metric">
+                            <label>Resolution:</label>
+                            <span id="resolution" class="metric-value">0 mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>System Status</h3>
+                    <div class="status-indicators">
+                        <div class="status-item">
+                            <span class="status-dot active"></span>
+                            <span>Transducer</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-dot active"></span>
+                            <span>Beamforming</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-dot active"></span>
+                            <span>Processing</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-dot active"></span>
+                            <span>Display</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Educational Info</h3>
+                    <div class="info-panel" id="infoPanel">
+                        <p>Select a parameter or organ preset to learn about ultrasound imaging principles.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Panel - Detailed Information -->
+        <div class="info-panel-bottom">
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="physics">Physics</button>
+                    <button class="tab-btn" data-tab="processing">Signal Processing</button>
+                    <button class="tab-btn" data-tab="optimization">Optimization</button>
+                    <button class="tab-btn" data-tab="clinical">Clinical Applications</button>
+                </div>
+                <div class="tab-content">
+                    <div id="physics" class="tab-pane active">
+                        <h4>Ultrasound Physics</h4>
+                        <p>Ultrasound imaging uses high-frequency sound waves (2-15 MHz) to create images of internal structures. The transducer emits pulses that travel through tissue and reflect back as echoes, which are processed to create the final image.</p>
+                        <ul>
+                            <li><strong>Frequency:</strong> Higher frequencies provide better resolution but penetrate less deeply</li>
+                            <li><strong>Depth:</strong> Deeper imaging requires lower frequencies and longer pulse repetition periods</li>
+                            <li><strong>Scan Lines:</strong> More scan lines create higher resolution images but reduce frame rate</li>
+                        </ul>
+                    </div>
+                    <div id="processing" class="tab-pane">
+                        <h4>Signal Processing Pipeline</h4>
+                        <p>The ultrasound signal processing pipeline includes beamforming, time-gain compensation, envelope detection, and scan conversion to transform raw echo data into displayable images.</p>
+                        <ul>
+                            <li><strong>Beamforming:</strong> Combines signals from multiple transducer elements with time delays</li>
+                            <li><strong>TGC:</strong> Compensates for signal attenuation with depth</li>
+                            <li><strong>Envelope Detection:</strong> Extracts amplitude information from RF signals</li>
+                            <li><strong>Scan Conversion:</strong> Transforms polar coordinates to Cartesian display coordinates</li>
+                        </ul>
+                    </div>
+                    <div id="optimization" class="tab-pane">
+                        <h4>Performance Optimization</h4>
+                        <p>Real-time ultrasound systems must balance image quality, frame rate, and computational resources. Key trade-offs include resolution vs. speed, depth vs. frame rate, and processing complexity vs. latency.</p>
+                        <ul>
+                            <li><strong>Frame Rate:</strong> Limited by acoustic travel time and processing speed</li>
+                            <li><strong>Memory:</strong> Buffers must handle high-throughput data streams</li>
+                            <li><strong>Processing:</strong> Parallel algorithms optimize real-time performance</li>
+                        </ul>
+                    </div>
+                    <div id="clinical" class="tab-pane">
+                        <h4>Clinical Applications</h4>
+                        <p>Different organs require specific imaging configurations. Understanding these requirements helps optimize system performance for clinical needs.</p>
+                        <ul>
+                            <li><strong>Liver:</strong> Wide field of view, moderate depth, convex probe</li>
+                            <li><strong>Heart:</strong> High frame rate, sector scan, phased array</li>
+                            <li><strong>Kidney:</strong> Medium depth, good resolution, convex probe</li>
+                            <li><strong>Superficial:</strong> High frequency, linear probe, shallow depth</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="ultrasound-simulation.js"></script>
+</body>
+</html>
