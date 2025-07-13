@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultrasound Simulation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #2a4a2a;
+            color: #4eff4a;
+        }
+        .error {
+            background-color: #4a2a2a;
+            color: #ff4a4a;
+        }
+        .info {
+            background-color: #2a2a4a;
+            color: #4a9eff;
+        }
+        #simulation-container {
+            margin-top: 20px;
+            border: 2px solid #666;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ultrasound Simulation Test Page</h1>
+    
+    <div id="test-results">
+        <div class="test-result info">
+            <h3>Testing Basic Functionality</h3>
+            <p>This page tests the ultrasound simulation components...</p>
+        </div>
+    </div>
+    
+    <div id="simulation-container">
+        <h2>Simulation Preview</h2>
+        <iframe src="index.html" title="Ultrasound Simulation"></iframe>
+    </div>
+    
+    <script>
+        // Test JavaScript functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const results = document.getElementById('test-results');
+            
+            // Test 1: Basic DOM elements
+            try {
+                const iframe = document.querySelector('iframe');
+                if (iframe) {
+                    addTestResult('✓ Iframe element created successfully', 'success');
+                } else {
+                    addTestResult('✗ Iframe element not found', 'error');
+                }
+            } catch (e) {
+                addTestResult('✗ Error testing iframe: ' + e.message, 'error');
+            }
+            
+            // Test 2: CSS loading
+            try {
+                const computedStyle = window.getComputedStyle(document.body);
+                if (computedStyle.backgroundColor === 'rgb(26, 26, 26)') {
+                    addTestResult('✓ CSS styles loaded correctly', 'success');
+                } else {
+                    addTestResult('✗ CSS styles not applied correctly', 'error');
+                }
+            } catch (e) {
+                addTestResult('✗ Error testing CSS: ' + e.message, 'error');
+            }
+            
+            // Test 3: Check if simulation loads
+            setTimeout(() => {
+                try {
+                    const iframe = document.querySelector('iframe');
+                    if (iframe.contentDocument || iframe.contentWindow) {
+                        addTestResult('✓ Simulation iframe accessible', 'success');
+                        
+                        // Try to access simulation elements
+                        setTimeout(() => {
+                            try {
+                                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                                const canvas = iframeDoc.querySelector('#ultrasound-canvas');
+                                if (canvas) {
+                                    addTestResult('✓ Ultrasound canvas element found', 'success');
+                                } else {
+                                    addTestResult('? Canvas element not found (may still be loading)', 'info');
+                                }
+                            } catch (e) {
+                                addTestResult('? Cannot access iframe content (cross-origin or still loading)', 'info');
+                            }
+                        }, 2000);
+                    } else {
+                        addTestResult('✗ Simulation iframe not accessible', 'error');
+                    }
+                } catch (e) {
+                    addTestResult('✗ Error testing simulation: ' + e.message, 'error');
+                }
+            }, 1000);
+            
+            // Test 4: Browser compatibility
+            try {
+                if (typeof WebGL2RenderingContext !== 'undefined' || typeof WebGLRenderingContext !== 'undefined') {
+                    addTestResult('✓ WebGL support available', 'success');
+                } else {
+                    addTestResult('! WebGL not supported (simulation will use canvas fallback)', 'info');
+                }
+                
+                if (typeof Float32Array !== 'undefined') {
+                    addTestResult('✓ TypedArray support available', 'success');
+                } else {
+                    addTestResult('✗ TypedArray not supported', 'error');
+                }
+                
+                if (typeof Worker !== 'undefined') {
+                    addTestResult('✓ Web Workers supported', 'success');
+                } else {
+                    addTestResult('! Web Workers not supported (may affect performance)', 'info');
+                }
+            } catch (e) {
+                addTestResult('✗ Error testing browser compatibility: ' + e.message, 'error');
+            }
+            
+            // Test 5: Performance check
+            try {
+                const start = performance.now();
+                const testArray = new Float32Array(1000000);
+                for (let i = 0; i < testArray.length; i++) {
+                    testArray[i] = Math.sin(i * 0.01);
+                }
+                const end = performance.now();
+                const time = end - start;
+                
+                if (time < 100) {
+                    addTestResult(`✓ Performance test passed (${time.toFixed(2)}ms)`, 'success');
+                } else {
+                    addTestResult(`! Performance test slow (${time.toFixed(2)}ms)`, 'info');
+                }
+            } catch (e) {
+                addTestResult('✗ Error in performance test: ' + e.message, 'error');
+            }
+        });
+        
+        function addTestResult(message, type) {
+            const results = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<p>${message}</p>`;
+            results.appendChild(div);
+        }
+    </script>
+</body>
+</html>

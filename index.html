@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Ultrasound Imaging Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Interactive Ultrasound Imaging Simulation</h1>
+            <p>Educational Tool for Signal Processing and Medical Imaging</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: Controls -->
+            <div class="control-panel">
+                <div class="panel-section">
+                    <h3>Transducer Configuration</h3>
+                    <div class="control-group">
+                        <label for="probe-type">Probe Type:</label>
+                        <select id="probe-type">
+                            <option value="linear">Linear Array</option>
+                            <option value="convex">Convex Array</option>
+                            <option value="phased">Phased Array</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="frequency">Frequency (MHz):</label>
+                        <input type="range" id="frequency" min="2" max="15" value="5" step="0.5">
+                        <span id="frequency-value">5.0</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="elements">Elements:</label>
+                        <input type="range" id="elements" min="64" max="256" value="128" step="16">
+                        <span id="elements-value">128</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Imaging Parameters</h3>
+                    <div class="control-group">
+                        <label for="depth">Depth (cm):</label>
+                        <input type="range" id="depth" min="5" max="25" value="15" step="1">
+                        <span id="depth-value">15</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="scan-lines">Scan Lines:</label>
+                        <input type="range" id="scan-lines" min="64" max="256" value="128" step="16">
+                        <span id="scan-lines-value">128</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="gain">Gain (dB):</label>
+                        <input type="range" id="gain" min="0" max="80" value="40" step="5">
+                        <span id="gain-value">40</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="tgc">Time Gain Compensation:</label>
+                        <input type="range" id="tgc" min="0" max="100" value="50" step="5">
+                        <span id="tgc-value">50</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Organ Presets</h3>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" data-preset="liver">Liver</button>
+                        <button class="preset-btn" data-preset="heart">Heart</button>
+                        <button class="preset-btn" data-preset="kidney">Kidney</button>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Simulation Controls</h3>
+                    <div class="control-group">
+                        <button id="play-pause">Play/Pause</button>
+                        <button id="step-mode">Step Mode</button>
+                        <button id="reset">Reset</button>
+                    </div>
+                    <div class="control-group">
+                        <label for="simulation-speed">Speed:</label>
+                        <input type="range" id="simulation-speed" min="0.1" max="2" value="1" step="0.1">
+                        <span id="speed-value">1.0x</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Panel: Main Display -->
+            <div class="display-panel">
+                <div class="ultrasound-display">
+                    <canvas id="ultrasound-canvas" width="400" height="600"></canvas>
+                    <div class="display-overlay">
+                        <div class="depth-markers" id="depth-markers"></div>
+                        <div class="measurement-tools" id="measurement-tools"></div>
+                    </div>
+                </div>
+
+                <div class="transducer-animation">
+                    <canvas id="transducer-canvas" width="400" height="200"></canvas>
+                    <div class="animation-controls">
+                        <button id="show-beam-pattern">Show Beam Pattern</button>
+                        <button id="show-scan-lines">Show Scan Lines</button>
+                        <button id="show-pulse-echo">Show Pulse-Echo</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Information and Metrics -->
+            <div class="info-panel">
+                <div class="panel-section">
+                    <h3>Performance Metrics</h3>
+                    <div class="metric-item">
+                        <span class="metric-label">Frame Rate:</span>
+                        <span class="metric-value" id="frame-rate">--</span>
+                        <span class="metric-unit">FPS</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Data Throughput:</span>
+                        <span class="metric-value" id="data-throughput">--</span>
+                        <span class="metric-unit">MB/s</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Processing Time:</span>
+                        <span class="metric-value" id="processing-time">--</span>
+                        <span class="metric-unit">ms</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Memory Usage:</span>
+                        <span class="metric-value" id="memory-usage">--</span>
+                        <span class="metric-unit">MB</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Signal Processing Pipeline</h3>
+                    <div class="pipeline-stage" id="stage-1">
+                        <div class="stage-name">1. Pulse Generation</div>
+                        <div class="stage-status">Ready</div>
+                        <div class="stage-progress">
+                            <div class="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="pipeline-stage" id="stage-2">
+                        <div class="stage-name">2. Echo Reception</div>
+                        <div class="stage-status">Ready</div>
+                        <div class="stage-progress">
+                            <div class="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="pipeline-stage" id="stage-3">
+                        <div class="stage-name">3. Beamforming</div>
+                        <div class="stage-status">Ready</div>
+                        <div class="stage-progress">
+                            <div class="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="pipeline-stage" id="stage-4">
+                        <div class="stage-name">4. Scan Conversion</div>
+                        <div class="stage-status">Ready</div>
+                        <div class="stage-progress">
+                            <div class="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="pipeline-stage" id="stage-5">
+                        <div class="stage-name">5. Image Processing</div>
+                        <div class="stage-status">Ready</div>
+                        <div class="stage-progress">
+                            <div class="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Educational Information</h3>
+                    <div class="info-content" id="info-content">
+                        <p>Select a control or hover over elements to see detailed explanations.</p>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Image Quality Metrics</h3>
+                    <div class="quality-metric">
+                        <span class="metric-label">Axial Resolution:</span>
+                        <span class="metric-value" id="axial-resolution">--</span>
+                        <span class="metric-unit">mm</span>
+                    </div>
+                    <div class="quality-metric">
+                        <span class="metric-label">Lateral Resolution:</span>
+                        <span class="metric-value" id="lateral-resolution">--</span>
+                        <span class="metric-unit">mm</span>
+                    </div>
+                    <div class="quality-metric">
+                        <span class="metric-label">Contrast:</span>
+                        <span class="metric-value" id="contrast">--</span>
+                        <span class="metric-unit">dB</span>
+                    </div>
+                    <div class="quality-metric">
+                        <span class="metric-label">Signal-to-Noise:</span>
+                        <span class="metric-value" id="snr">--</span>
+                        <span class="metric-unit">dB</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Panel: Additional Tools -->
+        <div class="bottom-panel">
+            <div class="tool-section">
+                <h3>Data Visualization</h3>
+                <canvas id="rf-data-canvas" width="200" height="100"></canvas>
+                <canvas id="beamformed-canvas" width="200" height="100"></canvas>
+                <canvas id="envelope-canvas" width="200" height="100"></canvas>
+            </div>
+            
+            <div class="tool-section">
+                <h3>Interactive Learning</h3>
+                <div class="quiz-container" id="quiz-container">
+                    <div class="quiz-question" id="quiz-question">
+                        What happens to frame rate when you increase the number of scan lines?
+                    </div>
+                    <div class="quiz-options">
+                        <button class="quiz-option" data-correct="false">Increases</button>
+                        <button class="quiz-option" data-correct="true">Decreases</button>
+                        <button class="quiz-option" data-correct="false">Stays the same</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="simulation.js"></script>
+    <script src="interface.js"></script>
+    <script src="education.js"></script>
+</body>
+</html>
